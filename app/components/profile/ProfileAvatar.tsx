@@ -1,27 +1,51 @@
 import React from 'react'
 import { Layout } from '../layout'
-import { Image, StyleSheet, ViewStyle } from 'react-native'
+import {
+  Image,
+  ImageStyle,
+  TouchableWithoutFeedback,
+  ViewStyle,
+} from 'react-native'
 
 export declare namespace ProfileAvatar {
   type Props = {
     profileUrl: string
+    containerStyle?: ViewStyle[]
+    diameter: number
+    borderWidth: number
+    selected?: boolean
+    onPress?: () => void
   }
 }
 
-export function ProfileAvatar({ profileUrl }: ProfileAvatar.Props) {
-  const containerStyle: ViewStyle = {
-    backgroundColor: '#BFD8EC',
-    width: 65,
-    height: 65,
+export function ProfileAvatar({
+  profileUrl,
+  containerStyle = [],
+  diameter,
+  borderWidth,
+  onPress,
+  selected = false,
+}: ProfileAvatar.Props) {
+  const style: ViewStyle[] = [
+    {
+      backgroundColor: selected ? '#BFD8EC' : 'transparent',
+      width: diameter,
+      height: diameter,
+      borderRadius: 50,
+      marginRight: 15,
+    },
+    ...containerStyle,
+  ]
+  const imageStyle: ImageStyle = {
+    width: diameter - 2 * borderWidth,
+    height: diameter - 2 * borderWidth,
     borderRadius: 50,
-    marginRight: 15,
   }
   return (
-    <Layout style={containerStyle} align="center center">
-      <Image
-        source={{ uri: profileUrl }}
-        style={{ width: 58, height: 58, borderRadius: 50 }}
-      />
-    </Layout>
+    <TouchableWithoutFeedback onPress={onPress}>
+      <Layout style={style} align="center center">
+        <Image source={{ uri: profileUrl }} style={imageStyle} />
+      </Layout>
+    </TouchableWithoutFeedback>
   )
 }

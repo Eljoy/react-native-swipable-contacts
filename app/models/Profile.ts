@@ -3,5 +3,6 @@ export interface Profile {
   firstName: string
   lastName: string
   imageUrl: string
+  jobTitle: string
   about: string
 }

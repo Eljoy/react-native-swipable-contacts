@@ -1,9 +1,9 @@
 import React from 'react'
-import { useProfile } from '../../hooks/useProfile'
-import { Layout } from '../layout'
 import { FlatList, ListRenderItemInfo, useWindowDimensions } from 'react-native'
-import { ProfileAvatar } from './ProfileAvatar'
+import { useProfile } from '../../hooks/useProfile'
 import { Profile } from '../../models'
+import { Layout } from '../layout'
+import { ProfileAvatar } from './ProfileAvatar'
 
 export default function ProfileHeader() {
   const { profiles, selectedProfile, selectProfile } = useProfile()
@@ -11,7 +11,7 @@ export default function ProfileHeader() {
   const avatarDiameter = 65
   const firstLastElementOffset = Math.floor((width - avatarDiameter) / 2)
   return (
-    <Layout flex={1} align="center center" maxHeight={150}>
+    <Layout flex={1} align="center center" maxHeight={125}>
       <FlatList
         data={profiles}
         horizontal={true}

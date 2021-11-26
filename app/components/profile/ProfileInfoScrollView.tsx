@@ -1,15 +1,39 @@
-import React, { useRef, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { FlatList, ListRenderItemInfo } from 'react-native'
 import { useProfile } from '../../hooks/useProfile'
 import { Profile } from '../../models'
 import Layout from '../layout/Layout'
 import { ProfileInfo } from './ProfileInfo'
 
-export function ProfileInfoScrollView() {
+type ScrollIndexEvent = {
+  index: number
+  source: string
+}
+
+declare namespace ProfileInfoScrollView {
+  export type Props = {
+    onIndexChanged?(event: ScrollIndexEvent): void
+    scrollIndex: ScrollIndexEvent
+  }
+}
+
+export function ProfileInfoScrollView({
+  onIndexChanged = () => {},
+  scrollIndex,
+}: ProfileInfoScrollView.Props) {
   const { profiles } = useProfile()
   const flatListRef = useRef<FlatList>(null)
   const [containerHeight, setContainerHeight] = useState(0)
-  let offset = 0
+  useEffect(() => {
+    try {
+      flatListRef.current.scrollToIndex({
+        animated: true,
+        index: scrollIndex.index,
+      })
+    } catch (e) {}
+  }, [scrollIndex])
+
+  let beginOffset = 0
   return (
     <Layout
       flex={1}
@@ -20,19 +44,15 @@ export function ProfileInfoScrollView() {
       <FlatList
         ref={flatListRef}
         data={profiles}
-        // onScroll={(onScroll) => {
-        //   console.log('onScroll ', onScroll)
-        // }}
+        onScrollBeginDrag={(scrollEvent) => {
+          beginOffset = scrollEvent.nativeEvent.contentOffset.y
+        }}
         onScrollEndDrag={(scrollEvent) => {
           const currentOffset = scrollEvent.nativeEvent.contentOffset.y
-          const direction = currentOffset > offset ? 'down' : 'up'
-          offset = currentOffset
-          const relation = currentOffset / containerHeight
+          const direction = currentOffset > beginOffset ? 'down' : 'up'
           const index =
-            direction === 'up' ? Math.floor(relation) : Math.ceil(relation)
-          if (index > 0 && index < profiles.length) {
-            flatListRef.current.scrollToIndex({ animated: true, index })
-          }
+            direction === 'up' ? scrollIndex.index - 1 : scrollIndex.index + 1
+          onIndexChanged({ index, source: 'ProfileInfoScrollView' })
         }}
         getItemLayout={(_, index) => {
           return {

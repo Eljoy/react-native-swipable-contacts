@@ -1,15 +1,16 @@
 import React from 'react'
-import { Layout } from '../layout'
 import {
   Image,
+  ImageSourcePropType,
   ImageStyle,
   TouchableWithoutFeedback,
   ViewStyle,
 } from 'react-native'
+import { Layout } from '../layout'
 
 export declare namespace ProfileAvatar {
   type Props = {
-    profileUrl: string
+    profileImageSource: ImageSourcePropType
     containerStyle?: ViewStyle[]
     diameter: number
     borderWidth: number
@@ -18,8 +19,8 @@ export declare namespace ProfileAvatar {
   }
 }
 
-export function ProfileAvatar({
-  profileUrl,
+export const ProfileAvatar = React.memo(function ({
+  profileImageSource,
   containerStyle = [],
   diameter,
   borderWidth,
@@ -41,11 +42,16 @@ export function ProfileAvatar({
     height: diameter - 2 * borderWidth,
     borderRadius: 50,
   }
+
   return (
     <TouchableWithoutFeedback onPress={onPress}>
       <Layout style={style} align="center center">
-        <Image source={{ uri: profileUrl }} style={imageStyle} />
+        <Image source={profileImageSource} style={imageStyle} />
       </Layout>
     </TouchableWithoutFeedback>
   )
+})
+
+function ImageT({ imageName, ...props }) {
+  return <Image {...props} source={imageName} />
 }

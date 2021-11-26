@@ -1,19 +1,22 @@
 import React from 'react'
 import { Text, useWindowDimensions } from 'react-native'
 import { Profile } from '../../models'
-import Layout from '../layout/Layout'
+import Layout, { LayoutProps } from '../layout/Layout'
 import { BodyText, SubTitleText, TitleText } from '../typography'
 
 export declare namespace ProfileInfo {
   type Props = {
     profile: Profile
-  }
+  } & LayoutProps
 }
 
-export function ProfileInfo({ profile }: ProfileInfo.Props) {
+export const ProfileInfo = React.memo(function ({
+  profile,
+  ...props
+}: ProfileInfo.Props) {
   const { width } = useWindowDimensions()
   return (
-    <Layout flex={1} style={{ width: width }}>
+    <Layout {...props} flex={1} style={{ width }}>
       <Layout flex={1} maxHeight={50} align="space-around center">
         <TitleText>
           <Text style={{ fontWeight: 'bold' }}>{profile.firstName}</Text>
@@ -27,4 +30,4 @@ export function ProfileInfo({ profile }: ProfileInfo.Props) {
       </Layout>
     </Layout>
   )
-}
+})

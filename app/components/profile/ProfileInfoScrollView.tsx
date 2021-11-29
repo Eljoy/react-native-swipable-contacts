@@ -1,5 +1,12 @@
-import React, { useEffect, useRef, useState } from 'react'
-import { FlatList, ListRenderItemInfo } from 'react-native'
+import React, { useState } from 'react'
+import { Button, FlatList, ListRenderItemInfo } from 'react-native'
+import Animated, {
+  scrollTo,
+  useAnimatedRef,
+  useAnimatedScrollHandler,
+  useDerivedValue,
+  useSharedValue,
+} from 'react-native-reanimated'
 import { useProfile } from '../../hooks/useProfile'
 import { Profile } from '../../models'
 import Layout from '../layout/Layout'
@@ -12,28 +19,39 @@ type ScrollIndexEvent = {
 
 declare namespace ProfileInfoScrollView {
   export type Props = {
-    onIndexChanged?(event: ScrollIndexEvent): void
-    scrollIndex: ScrollIndexEvent
+    onIndexChanged?(index: number): void
+    scrollIndex: number
+    ref?: any
   }
 }
 
-export function ProfileInfoScrollView({
-  onIndexChanged = () => {},
-  scrollIndex,
-}: ProfileInfoScrollView.Props) {
-  const { profiles } = useProfile()
-  const flatListRef = useRef<FlatList>(null)
-  const [containerHeight, setContainerHeight] = useState(0)
-  useEffect(() => {
-    try {
-      flatListRef.current.scrollToIndex({
-        animated: true,
-        index: scrollIndex.index,
-      })
-    } catch (e) {}
-  }, [scrollIndex])
+const AnimatedFlatList = Animated.createAnimatedComponent(FlatList)
 
-  let beginOffset = 0
+export function ProfileInfoScrollView({}: ProfileInfoScrollView.Props) {
+  const { profiles } = useProfile()
+  const [containerHeight, setContainerHeight] = useState(0)
+  const aref = useAnimatedRef<FlatList>()
+
+  const scroll = useSharedValue(0)
+
+  useDerivedValue(() => {
+    scrollTo(aref as any, 0, scroll.value * containerHeight, true)
+  })
+
+  const animatedScrollHandler = useAnimatedScrollHandler<{
+    beginOffset: number
+  }>({
+    onBeginDrag: (e, c) => {
+      c.beginOffset = e.contentOffset.y
+    },
+    onEndDrag: (e, c) => {
+      const currentOffset = e.contentOffset.y
+      const direction = currentOffset > c.beginOffset ? 'down' : 'up'
+      scroll.value = direction === 'up' ? scroll.value - 1 : scroll.value + 1
+      scrollTo(aref as any, 0, scroll.value * containerHeight, true)
+    },
+  })
+
   return (
     <Layout
       flex={1}
@@ -41,19 +59,17 @@ export function ProfileInfoScrollView({
         const { height } = event.nativeEvent.layout
         setContainerHeight(height)
       }}>
-      <FlatList
-        ref={flatListRef}
+      <Button
+        title="scroll down"
+        onPress={() => {
+          scroll.value = scroll.value + 1
+          if (scroll.value >= 10) scroll.value = 0
+        }}
+      />
+      <AnimatedFlatList
+        ref={aref}
         data={profiles}
-        onScrollBeginDrag={(scrollEvent) => {
-          beginOffset = scrollEvent.nativeEvent.contentOffset.y
-        }}
-        onScrollEndDrag={(scrollEvent) => {
-          const currentOffset = scrollEvent.nativeEvent.contentOffset.y
-          const direction = currentOffset > beginOffset ? 'down' : 'up'
-          const index =
-            direction === 'up' ? scrollIndex.index - 1 : scrollIndex.index + 1
-          onIndexChanged({ index, source: 'ProfileInfoScrollView' })
-        }}
+        onScroll={animatedScrollHandler}
         getItemLayout={(_, index) => {
           return {
             length: containerHeight,
@@ -61,10 +77,11 @@ export function ProfileInfoScrollView({
             offset: index * containerHeight,
           }
         }}
+        scrollEventThrottle={16}
         renderItem={({ item: p }: ListRenderItemInfo<Profile>) => (
           <ProfileInfo height={containerHeight} key={p.id} profile={p} />
         )}
-        keyExtractor={(p) => p.id}
+        keyExtractor={(p: Profile) => p.id}
       />
     </Layout>
   )

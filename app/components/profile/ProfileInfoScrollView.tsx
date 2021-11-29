@@ -1,11 +1,10 @@
 import React, { useState } from 'react'
-import { Button, FlatList, ListRenderItemInfo } from 'react-native'
+import { FlatList, ListRenderItemInfo } from 'react-native'
 import Animated, {
   scrollTo,
   useAnimatedRef,
   useAnimatedScrollHandler,
   useDerivedValue,
-  useSharedValue,
 } from 'react-native-reanimated'
 import { useProfile } from '../../hooks/useProfile'
 import { Profile } from '../../models'
@@ -20,22 +19,24 @@ type ScrollIndexEvent = {
 declare namespace ProfileInfoScrollView {
   export type Props = {
     onIndexChanged?(index: number): void
-    scrollIndex: number
+    scrollIndex: any
     ref?: any
   }
 }
 
 const AnimatedFlatList = Animated.createAnimatedComponent(FlatList)
 
-export function ProfileInfoScrollView({}: ProfileInfoScrollView.Props) {
+export function ProfileInfoScrollView({
+  scrollIndex,
+  onIndexChanged,
+}: ProfileInfoScrollView.Props) {
   const { profiles } = useProfile()
   const [containerHeight, setContainerHeight] = useState(0)
-  const aref = useAnimatedRef<FlatList>()
-
-  const scroll = useSharedValue(0)
+  const animFlatListRef = useAnimatedRef<FlatList>()
 
   useDerivedValue(() => {
-    scrollTo(aref as any, 0, scroll.value * containerHeight, true)
+    scrollTo(animFlatListRef, 0, scrollIndex.value * containerHeight, true)
+    scrollTo(animFlatListRef, 0, scrollIndex.value * containerHeight, true)
   })
 
   const animatedScrollHandler = useAnimatedScrollHandler<{
@@ -47,8 +48,9 @@ export function ProfileInfoScrollView({}: ProfileInfoScrollView.Props) {
     onEndDrag: (e, c) => {
       const currentOffset = e.contentOffset.y
       const direction = currentOffset > c.beginOffset ? 'down' : 'up'
-      scroll.value = direction === 'up' ? scroll.value - 1 : scroll.value + 1
-      scrollTo(aref as any, 0, scroll.value * containerHeight, true)
+      const index =
+        direction === 'up' ? scrollIndex.value - 1 : scrollIndex.value + 1
+      onIndexChanged(index)
     },
   })
 
@@ -59,15 +61,8 @@ export function ProfileInfoScrollView({}: ProfileInfoScrollView.Props) {
         const { height } = event.nativeEvent.layout
         setContainerHeight(height)
       }}>
-      <Button
-        title="scroll down"
-        onPress={() => {
-          scroll.value = scroll.value + 1
-          if (scroll.value >= 10) scroll.value = 0
-        }}
-      />
       <AnimatedFlatList
-        ref={aref}
+        ref={animFlatListRef}
         data={profiles}
         onScroll={animatedScrollHandler}
         getItemLayout={(_, index) => {

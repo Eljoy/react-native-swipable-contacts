@@ -1,4 +1,6 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
+import { Animated } from 'react-native'
+import { useSharedValue } from 'react-native-reanimated'
 import { Header } from '../components/header'
 import { Layout } from '../components/layout'
 import { ProfileAvatarsScrollView } from '../components/profile'
@@ -18,18 +20,36 @@ export default function ProfileScreen() {
   useEffect(fetchProfiles, [])
   useEffect(() => selectProfile(profiles[0]), [profiles])
 
-  const [scrollIndexEvent, setScrollIndexEvent] = useState<ScrollIndexEvent>({
-    index: 0,
-    source: undefined,
-  })
-  // const [scrollIndex, setScrollIndex] = useState(0)
+  const [scrollIndexAvatars, setScrollIndexAvatars] = useState(0)
 
-  const onIndexChanged = (event: ScrollIndexEvent) => {
-    setScrollIndexEvent(event)
-    selectProfile(profiles[event.index])
+  // const onProfileInfoIndexChanged = (index: number) => {
+  //   setScrollIndexProfileInfo(index)
+  //   setScrollIndexAvatars(index)
+  //   selectProfile(profiles[index])
+  // }
+
+  function onAvatarsIndexChanged(index: number) {
+    'worklet'
+    onProfileInfoScrollIndexChanged(index)
+    selectProfile(profiles[index])
   }
+
+  // const onIndexChanged = (index: number) => {
+  //   setScrollIndexProfileInfo(index)
+  //   selectProfile(profiles[index])
+  // }
+
   const onProfileSelect = (_: Profile, index: number) => {
-    onIndexChanged({ index, source: '' })
+    // onProfileInfoIndexChanged(index)
+  }
+
+  const animIndex = useRef(new Animated.Value(0))
+
+  const scrollIndex = useSharedValue(0)
+
+  function onProfileInfoScrollIndexChanged(index: number) {
+    'worklet'
+    scrollIndex.value = index
   }
 
   return (
@@ -38,13 +58,13 @@ export default function ProfileScreen() {
         <TitleText style={{ fontWeight: 'bold' }}>Contacts</TitleText>
       </Header>
       <ProfileAvatarsScrollView
-        scrollIndexEvent={scrollIndexEvent}
-        onIndexChanged={onIndexChanged}
+        scrollIndex={scrollIndexAvatars}
+        onIndexChanged={onAvatarsIndexChanged}
         onProfileSelect={onProfileSelect}
       />
       <ProfileInfoScrollView
-        scrollIndex={scrollIndexEvent}
-        onIndexChanged={onIndexChanged}
+        scrollIndex={scrollIndex}
+        onIndexChanged={onProfileInfoScrollIndexChanged}
       />
     </Layout>
   )

@@ -1,61 +1,77 @@
-import React, { useEffect, useRef } from 'react'
+import React from 'react'
 import { FlatList, ListRenderItemInfo, useWindowDimensions } from 'react-native'
+import Animated, {
+  scrollTo,
+  SharedValue,
+  useAnimatedRef,
+  useAnimatedScrollHandler,
+  useDerivedValue,
+} from 'react-native-reanimated'
 import { useProfile } from '../../hooks/useProfile'
 import { Profile } from '../../models'
 import { Layout } from '../layout'
 import { ProfileAvatar } from './ProfileAvatar'
 
-type ScrollIndexEvent = {
-  index: number
-  source: string
-}
-
 export declare namespace ProfileAvatarsScrollView {
   export type Props = {
     onProfileSelect(profile: Profile, index: number): void
-    onIndexChanged?(event: ScrollIndexEvent): void
-    scrollIndexEvent: ScrollIndexEvent
+    onIndexChanged?(index: number): void
+    scrollIndex: SharedValue<number>
   }
 }
+
+const AnimatedFlatList = Animated.createAnimatedComponent(FlatList)
 
 export default function ProfileAvatarsScrollView({
   onProfileSelect,
   onIndexChanged,
-  scrollIndexEvent,
+  scrollIndex,
 }: ProfileAvatarsScrollView.Props) {
   const { profiles, selectedProfile } = useProfile()
   const { width } = useWindowDimensions()
+
   const avatarDiameter = 65
   const firstLastElementOffset = Math.floor((width - avatarDiameter) / 2)
-  const flatListRef = useRef<FlatList>(null)
-
-  useEffect(() => {
-    try {
-      if (scrollIndexEvent.source !== 'ProfileAvatarsScrollView') {
-        console.log(scrollIndexEvent.source)
-        flatListRef.current.scrollToIndex({
-          animated: true,
-          index: scrollIndexEvent.index,
-        })
-      }
-    } catch (e) {}
-  }, [scrollIndexEvent])
-
+  const animFlatListRef = useAnimatedRef<FlatList>()
   const avatarMarginRight = 15
   const itemLength = avatarDiameter + avatarMarginRight
+
+  useDerivedValue(() => {
+    scrollTo(animFlatListRef, scrollIndex.value * itemLength, 0, true)
+  })
+
+  const animatedScrollHandler = useAnimatedScrollHandler<{
+    beginOffset: number
+    wasDragged: boolean
+  }>({
+    onBeginDrag: (e, c) => {
+      c.wasDragged = true
+    },
+    onScroll: (e, c) => {
+      if (!c.wasDragged) {
+        return
+      }
+      const offset = e.contentOffset.x
+      const index = Math.round(offset / itemLength)
+      onIndexChanged(index)
+    },
+    onMomentumEnd: (e, c) => {
+      c.wasDragged = false
+    },
+  })
+
   return (
     <Layout flex={1} align="center center" maxHeight={125}>
-      <FlatList
+      <AnimatedFlatList
         data={profiles}
         horizontal={true}
-        ref={flatListRef}
+        bounces={false}
+        ref={animFlatListRef}
         contentContainerStyle={{ alignItems: 'center' }}
         showsHorizontalScrollIndicator={false}
-        onScroll={(scrollEvent) => {
-          const offset = scrollEvent.nativeEvent.contentOffset.x
-          const index = Math.floor(offset / itemLength)
-          onIndexChanged({ index, source: 'ProfileAvatarsScrollView' })
-        }}
+        alwaysBounceHorizontal={false}
+        onScroll={animatedScrollHandler}
+        scrollEventThrottle={16}
         renderItem={({ item: p, index }: ListRenderItemInfo<Profile>) => (
           <ProfileAvatar
             key={p.id}
@@ -80,7 +96,7 @@ export default function ProfileAvatarsScrollView({
             offset: index * itemLength,
           }
         }}
-        keyExtractor={(p) => p.id}
+        keyExtractor={(p: Profile) => p.id}
       />
     </Layout>
   )

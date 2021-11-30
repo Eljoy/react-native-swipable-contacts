@@ -1,6 +1,5 @@
-import React, { useEffect, useRef, useState } from 'react'
-import { Animated } from 'react-native'
-import { useSharedValue } from 'react-native-reanimated'
+import React, { useEffect } from 'react'
+import { runOnJS, useSharedValue } from 'react-native-reanimated'
 import { Header } from '../components/header'
 import { Layout } from '../components/layout'
 import { ProfileAvatarsScrollView } from '../components/profile'
@@ -9,47 +8,30 @@ import { TitleText } from '../components/typography'
 import { useProfile } from '../hooks/useProfile'
 import { Profile } from '../models'
 
-type ScrollIndexEvent = {
-  index: number
-  source: string
-}
-
 export default function ProfileScreen() {
   const { fetchProfiles, selectProfile, profiles } = useProfile()
-
   useEffect(fetchProfiles, [])
   useEffect(() => selectProfile(profiles[0]), [profiles])
 
-  const [scrollIndexAvatars, setScrollIndexAvatars] = useState(0)
-
-  // const onProfileInfoIndexChanged = (index: number) => {
-  //   setScrollIndexProfileInfo(index)
-  //   setScrollIndexAvatars(index)
-  //   selectProfile(profiles[index])
-  // }
-
-  function onAvatarsIndexChanged(index: number) {
-    'worklet'
-    onProfileInfoScrollIndexChanged(index)
-    selectProfile(profiles[index])
-  }
-
-  // const onIndexChanged = (index: number) => {
-  //   setScrollIndexProfileInfo(index)
-  //   selectProfile(profiles[index])
-  // }
-
-  const onProfileSelect = (_: Profile, index: number) => {
-    // onProfileInfoIndexChanged(index)
-  }
-
-  const animIndex = useRef(new Animated.Value(0))
-
-  const scrollIndex = useSharedValue(0)
+  const profileAvatarsScrollIndex = useSharedValue(0)
+  const profileInfoScrollIndex = useSharedValue(0)
 
   function onProfileInfoScrollIndexChanged(index: number) {
     'worklet'
-    scrollIndex.value = index
+    profileAvatarsScrollIndex.value = index
+    profileInfoScrollIndex.value = index
+  }
+
+  function onAvatarsIndexChanged(index: number) {
+    'worklet'
+    profileInfoScrollIndex.value = index
+    runOnJS(selectProfile)(profiles[index])
+  }
+
+  function onProfileSelect(profile: Profile, index: number) {
+    'worklet'
+    onProfileInfoScrollIndexChanged(index)
+    selectProfile(profile)
   }
 
   return (
@@ -58,12 +40,12 @@ export default function ProfileScreen() {
         <TitleText style={{ fontWeight: 'bold' }}>Contacts</TitleText>
       </Header>
       <ProfileAvatarsScrollView
-        scrollIndex={scrollIndexAvatars}
+        scrollIndex={profileAvatarsScrollIndex}
         onIndexChanged={onAvatarsIndexChanged}
         onProfileSelect={onProfileSelect}
       />
       <ProfileInfoScrollView
-        scrollIndex={scrollIndex}
+        scrollIndex={profileInfoScrollIndex}
         onIndexChanged={onProfileInfoScrollIndexChanged}
       />
     </Layout>

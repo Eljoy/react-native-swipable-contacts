@@ -1,20 +1,14 @@
-import React, { ReactNode } from 'react';
-import { StyleProp, View, ViewProps, ViewStyle } from 'react-native';
-import { LayoutAlign, LayoutDirection, LayoutUtils } from './layoutUtils';
+import React, { ReactNode } from 'react'
+import { StyleProp, View, ViewProps, ViewStyle } from 'react-native'
+import { LayoutAlign, LayoutDirection, LayoutUtils } from './layoutUtils'
 
 export type LayoutProps = {
-  direction?: LayoutDirection;
-  align?: LayoutAlign;
-  marginScale?: number;
-  marginHorizontalScale?: number;
-  marginVerticalScale?: number;
-  paddingScale?: number;
-  paddingHorizontalScale?: number;
-  paddingVerticalScale?: number;
-  style?: StyleProp<ViewStyle>;
-  children?: ReactNode;
+  direction?: LayoutDirection
+  align?: LayoutAlign
+  style?: StyleProp<ViewStyle>
+  children?: ReactNode
 } & Pick<ViewStyle, 'flex' | 'height' | 'maxHeight' | 'width' | 'maxWidth'> &
-  ViewProps;
+  ViewProps
 
 export default function Layout({
   flex,
@@ -24,12 +18,6 @@ export default function Layout({
   width,
   direction,
   align,
-  marginScale,
-  marginHorizontalScale,
-  marginVerticalScale,
-  paddingScale,
-  paddingHorizontalScale,
-  paddingVerticalScale,
   style,
   children,
   ...props
@@ -43,11 +31,11 @@ export default function Layout({
     maxWidth && { maxWidth },
     width && { width },
     style,
-  ] as StyleProp<ViewStyle>;
+  ] as StyleProp<ViewStyle>
 
   return (
     <View style={layoutStyle} {...props}>
       {children}
     </View>
-  );
+  )
 }

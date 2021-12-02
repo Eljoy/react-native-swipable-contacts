@@ -9,7 +9,7 @@ export class Profile {
   jobTitle: string
   about: string
 
-  static deserialize(profileJson): Profile {
+  static deserialize(profileJson: Omit<Profile, 'imageSource'>): Profile {
     return {
       ...profileJson,
       imageSource: getAvatarSourceByName(

@@ -1,4 +1,4 @@
-import { createContext, useReducer } from 'react'
+import { useReducer } from 'react'
 import { Api } from '../api'
 import { Profile } from '../models'
 
@@ -42,8 +42,6 @@ function profileReducer(
       throw new Error('Unknown action type: ' + type)
   }
 }
-
-const ProfileStateContext = createContext(null)
 
 export function useProfile() {
   const [state, dispatch] = useReducer(profileReducer, initialState)

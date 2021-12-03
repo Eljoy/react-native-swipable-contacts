@@ -1,7 +1,6 @@
-import React, { createContext, useContext } from 'react'
-import { Profile } from '../models'
-import { useReducer } from 'react'
+import { createContext, useReducer } from 'react'
 import { Api } from '../api'
+import { Profile } from '../models'
 
 type ProfileState = {
   profiles: Profile[]
@@ -46,18 +45,8 @@ function profileReducer(
 
 const ProfileStateContext = createContext(null)
 
-export function ProfileStateProvider({ children }) {
-  const [state, dispatch] = useReducer(profileReducer, initialState)
-  const value = { state, dispatch }
-  return (
-    <ProfileStateContext.Provider value={value}>
-      {children}
-    </ProfileStateContext.Provider>
-  )
-}
-
 export function useProfile() {
-  const { state, dispatch } = useContext(ProfileStateContext)
+  const [state, dispatch] = useReducer(profileReducer, initialState)
 
   return {
     selectedProfile: state.selectedProfile,

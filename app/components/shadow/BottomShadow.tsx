@@ -22,8 +22,9 @@ export function BottomShadow({
 }: BottomShadow.Props) {
   return (
     <SingleSidedShadowBox style={containerStyle} {...singleSidedShadowBoxProps}>
-      <Animated.View style={[styles.shadow, ...shadowStyle]} />
-      <View style={{ position: 'absolute' }}>{children}</View>
+      <Animated.View style={[styles.shadow, ...shadowStyle]}>
+        <View style={{ position: 'absolute', zIndex: 100 }}>{children}</View>
+      </Animated.View>
     </SingleSidedShadowBox>
   )
 }
@@ -32,10 +33,11 @@ const styles = StyleSheet.create({
   shadow: {
     backgroundColor: '#fff',
     flex: 1,
+    zIndex: -10,
     shadowColor: '#000',
     shadowOffset: { width: 1, height: 1 },
     shadowOpacity: 0.4,
-    shadowRadius: 100,
-    elevation: 0,
+    shadowRadius: 3,
+    elevation: 5,
   },
 })

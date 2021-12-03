@@ -6,6 +6,11 @@ import {
   TouchableWithoutFeedback,
   ViewStyle,
 } from 'react-native'
+import Animated, {
+  useAnimatedStyle,
+  useDerivedValue,
+  withSpring,
+} from 'react-native-reanimated'
 import { Layout } from '../layout'
 
 export declare namespace ProfileAvatar {
@@ -27,31 +32,46 @@ export const ProfileAvatar = React.memo(function ({
   onPress,
   selected = false,
 }: ProfileAvatar.Props) {
-  const style: ViewStyle[] = [
+  const selectedScale = useDerivedValue(() => {
+    return selected ? 1 : 0.8
+  }, [selected])
+
+  const containerStyles: ViewStyle[] = [
     {
-      backgroundColor: selected ? '#BFD8EC' : 'transparent',
       width: diameter,
       height: diameter,
-      borderRadius: 50,
       marginRight: 15,
     },
     ...containerStyle,
   ]
+
   const imageStyle: ImageStyle = {
     width: diameter - 2 * borderWidth,
     height: diameter - 2 * borderWidth,
     borderRadius: 50,
   }
 
+  const maskTransform = useAnimatedStyle(() => ({
+    transform: [{ scale: withSpring(selectedScale.value) }],
+  }))
+
+  const maskStyles: ViewStyle[] = [
+    {
+      width: diameter,
+      height: diameter,
+      borderRadius: 50,
+      position: 'absolute',
+      backgroundColor: '#BFD8EC',
+    },
+    maskTransform,
+  ]
+
   return (
     <TouchableWithoutFeedback onPress={onPress}>
-      <Layout style={style} align="center center">
+      <Layout style={containerStyles} align="center center">
+        <Animated.View style={maskStyles} />
         <Image source={profileImageSource} style={imageStyle} />
       </Layout>
     </TouchableWithoutFeedback>
   )
 })
-
-function ImageT({ imageName, ...props }) {
-  return <Image {...props} source={imageName} />
-}

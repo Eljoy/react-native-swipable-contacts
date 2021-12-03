@@ -6,8 +6,8 @@ import Animated, {
   useAnimatedRef,
   useAnimatedScrollHandler,
   useDerivedValue,
+  useSharedValue,
 } from 'react-native-reanimated'
-import { useProfile } from '../../hooks/useProfile'
 import { Profile } from '../../models'
 import { Layout } from '../layout'
 import { ProfileAvatar } from './ProfileAvatar'
@@ -17,27 +17,34 @@ export declare namespace ProfileAvatarsScrollView {
     onProfileSelect(profile: Profile, index: number): void
     onIndexChanged?(index: number): void
     scrollIndex: SharedValue<number>
+    profiles: Profile[]
+    selectedProfile: Profile
+    avatarDiameter?: number
   }
 }
 
 const AnimatedFlatList = Animated.createAnimatedComponent(FlatList)
 
-export default function ProfileAvatarsScrollView({
+export default React.memo(function ProfileAvatarsScrollView({
   onProfileSelect,
   onIndexChanged,
   scrollIndex,
+  profiles = [],
+  avatarDiameter = 65,
+  selectedProfile,
 }: ProfileAvatarsScrollView.Props) {
-  const { profiles, selectedProfile } = useProfile()
   const { width } = useWindowDimensions()
-
-  const avatarDiameter = 65
-  const firstLastElementOffset = Math.floor((width - avatarDiameter) / 2)
   const animFlatListRef = useAnimatedRef<FlatList>()
+  const firstLastElementOffset = Math.floor((width - avatarDiameter) / 2)
   const avatarMarginRight = 15
   const itemLength = avatarDiameter + avatarMarginRight
 
+  const wasDragged = useSharedValue(false)
+
   useDerivedValue(() => {
-    scrollTo(animFlatListRef, scrollIndex.value * itemLength, 0, true)
+    if (wasDragged.value === false) {
+      scrollTo(animFlatListRef, scrollIndex.value * itemLength, 0, true)
+    }
   })
 
   const animatedScrollHandler = useAnimatedScrollHandler<{
@@ -45,10 +52,10 @@ export default function ProfileAvatarsScrollView({
     wasDragged: boolean
   }>({
     onBeginDrag: (e, c) => {
-      c.wasDragged = true
+      wasDragged.value = true
     },
     onScroll: (e, c) => {
-      if (!c.wasDragged) {
+      if (!wasDragged.value) {
         return
       }
       const offset = e.contentOffset.x
@@ -56,7 +63,7 @@ export default function ProfileAvatarsScrollView({
       onIndexChanged(index)
     },
     onMomentumEnd: (e, c) => {
-      c.wasDragged = false
+      wasDragged.value = false
     },
   })
 
@@ -89,15 +96,8 @@ export default function ProfileAvatarsScrollView({
             ]}
           />
         )}
-        getItemLayout={(_, index) => {
-          return {
-            length: itemLength,
-            index,
-            offset: index * itemLength,
-          }
-        }}
         keyExtractor={(p: Profile) => p.id}
       />
     </Layout>
   )
-}
+})

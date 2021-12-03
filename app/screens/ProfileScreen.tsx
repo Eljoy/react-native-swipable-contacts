@@ -16,34 +16,26 @@ import { useProfile } from '../hooks/useProfile'
 import { Profile } from '../models'
 
 export default function ProfileScreen() {
-  const { fetchProfiles, selectProfile, profiles } = useProfile()
+  const { fetchProfiles, profiles, selectProfile, selectedProfile } =
+    useProfile()
+
   useEffect(fetchProfiles, [])
   useEffect(() => selectProfile(profiles[0]), [profiles])
 
-  const profileAvatarsScrollIndex = useSharedValue(0)
-  const profileInfoScrollIndex = useSharedValue(0)
+  const scrollIndex = useSharedValue(0)
+  const isProfileInfoDragged = useSharedValue(false)
 
-  function onProfileInfoScrollIndexChanged(index: number) {
+  function onScrollIndexChanged(index: number) {
     'worklet'
-    profileAvatarsScrollIndex.value = index
-    profileInfoScrollIndex.value = index
-    runOnJS(selectProfile)(profiles[index])
-  }
-
-  function onAvatarsIndexChanged(index: number) {
-    'worklet'
-    profileInfoScrollIndex.value = index
+    scrollIndex.value = index
     runOnJS(selectProfile)(profiles[index])
   }
 
   function onProfileSelect(profile: Profile, index: number) {
     'worklet'
-    profileAvatarsScrollIndex.value = index
-    profileInfoScrollIndex.value = index
+    scrollIndex.value = index
     selectProfile(profile)
   }
-
-  const isProfileInfoDragged = useSharedValue(false)
 
   function onProfileScrollDragBegin() {
     'worklet'
@@ -57,6 +49,9 @@ export default function ProfileScreen() {
 
   const shadowAnimatedStyle = useAnimatedStyle<ViewStyle>(() => {
     return {
+      elevation: isProfileInfoDragged.value
+        ? withSpring(styles.shadow.elevation)
+        : withSpring(0),
       shadowOpacity: isProfileInfoDragged.value
         ? withSpring(styles.shadow.shadowOpacity)
         : withSpring(0),
@@ -73,16 +68,19 @@ export default function ProfileScreen() {
         shadowWidth={5}
         shadowStyle={[styles.shadow, shadowAnimatedStyle]}>
         <ProfileAvatarsScrollView
-          scrollIndex={profileAvatarsScrollIndex}
-          onIndexChanged={onAvatarsIndexChanged}
+          selectedProfile={selectedProfile}
+          profiles={profiles}
+          scrollIndex={scrollIndex}
+          onIndexChanged={onScrollIndexChanged}
           onProfileSelect={onProfileSelect}
         />
       </BottomShadow>
       <ProfileInfoScrollView
+        profiles={profiles}
         onBeginDrag={onProfileScrollDragBegin}
         onEndDrag={onProfileScrollDragEnd}
-        scrollIndex={profileInfoScrollIndex}
-        onIndexChanged={onProfileInfoScrollIndexChanged}
+        scrollIndex={scrollIndex}
+        onIndexChanged={onScrollIndexChanged}
       />
     </Layout>
   )
@@ -94,6 +92,7 @@ const styles = StyleSheet.create({
       width: 0,
       height: -2,
     },
+    elevation: 4,
     shadowOpacity: 0.27,
     shadowRadius: 4.65,
   },

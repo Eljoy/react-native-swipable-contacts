@@ -35,7 +35,7 @@ function profileReducer(
       }
     case ActionTypes.SetProfiles:
       return {
-        ...this.state,
+        ...state,
         profiles: payload as Profile[],
       }
     default:

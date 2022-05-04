@@ -78,7 +78,7 @@ export default React.memo(function ProfileAvatarsScrollView({
         showsHorizontalScrollIndicator={false}
         alwaysBounceHorizontal={false}
         onScroll={animatedScrollHandler}
-        scrollEventThrottle={100}
+        scrollEventThrottle={200}
         renderItem={({ item: p, index }: ListRenderItemInfo<Profile>) => (
           <ProfileAvatar
             key={p.id}

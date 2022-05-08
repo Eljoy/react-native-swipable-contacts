@@ -3,6 +3,7 @@ import {
   FlatList,
   ListRenderItemInfo,
   Platform,
+  StyleSheet,
   useWindowDimensions,
 } from 'react-native'
 import Animated, {
@@ -82,7 +83,7 @@ export default React.memo(function ProfileAvatarsScrollView({
         bounces={false}
         decelerationRate={Platform.select({ android: 'fast', ios: undefined })}
         ref={animFlatListRef}
-        contentContainerStyle={{ alignItems: 'center' }}
+        contentContainerStyle={styles.contentContainerStyle}
         showsHorizontalScrollIndicator={false}
         alwaysBounceHorizontal={false}
         onScroll={animatedScrollHandler}
@@ -109,4 +110,10 @@ export default React.memo(function ProfileAvatarsScrollView({
       />
     </Layout>
   )
+})
+
+const styles = StyleSheet.create({
+  contentContainerStyle: {
+    alignItems: 'center',
+  },
 })

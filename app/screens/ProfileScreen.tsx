@@ -12,7 +12,6 @@ import { ProfileInfoScrollView } from '../components/profile/ProfileInfoScrollVi
 import { BottomShadow } from '../components/shadow'
 import { TitleText } from '../components/typography'
 import { useProfile } from '../hooks/useProfile'
-import { Profile } from '../models'
 
 export default function ProfileScreen() {
   const { fetchProfiles, profiles } = useProfile()
@@ -23,11 +22,6 @@ export default function ProfileScreen() {
   const isProfileInfoDragged = useSharedValue(false)
 
   function onScrollIndexChanged(index: number) {
-    'worklet'
-    scrollIndex.value = index
-  }
-
-  function onProfileSelect(profile: Profile, index: number) {
     'worklet'
     scrollIndex.value = index
   }
@@ -66,7 +60,6 @@ export default function ProfileScreen() {
           profiles={profiles}
           scrollIndex={scrollIndex}
           onIndexChanged={onScrollIndexChanged}
-          onProfileSelect={onProfileSelect}
         />
       </BottomShadow>
       <ProfileInfoScrollView

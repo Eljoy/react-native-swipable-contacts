@@ -20,7 +20,6 @@ import { ProfileAvatar } from './ProfileAvatar'
 
 export declare namespace ProfileAvatarsScrollView {
   export type Props = {
-    onProfileSelect(profile: Profile, index: number): void
     onIndexChanged?(index: number): void
     scrollIndex: SharedValue<number>
     profiles: Profile[]
@@ -31,7 +30,6 @@ export declare namespace ProfileAvatarsScrollView {
 const AnimatedFlatList = Animated.createAnimatedComponent(FlatList)
 
 export default React.memo(function ProfileAvatarsScrollView({
-  onProfileSelect,
   onIndexChanged,
   scrollIndex,
   profiles = [],
@@ -96,7 +94,7 @@ export default React.memo(function ProfileAvatarsScrollView({
             diameter={avatarDiameter}
             borderWidth={4}
             profileImageSource={p.imageSource}
-            onPress={() => onProfileSelect(p, index)}
+            onPress={() => onIndexChanged(index)}
             containerStyle={[
               { marginRight: avatarMarginRight },
               index === 0 && { marginLeft: firstLastElementOffset },

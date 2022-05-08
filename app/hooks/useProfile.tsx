@@ -4,12 +4,10 @@ import { Profile } from '../models'
 
 type ProfileState = {
   profiles: Profile[]
-  selectedProfile: Profile | null
 }
 
 enum ActionTypes {
   SetProfiles = 'SET_PROFILES',
-  SelectProfile = 'SELECT_PROFILE',
 }
 
 type ProfileAction = {
@@ -19,7 +17,6 @@ type ProfileAction = {
 
 const initialState: ProfileState = {
   profiles: [],
-  selectedProfile: null,
 }
 
 function profileReducer(
@@ -28,11 +25,6 @@ function profileReducer(
 ): ProfileState {
   const { type, payload } = action
   switch (type) {
-    case ActionTypes.SelectProfile:
-      return {
-        ...state,
-        selectedProfile: payload as Profile,
-      }
     case ActionTypes.SetProfiles:
       return {
         ...state,
@@ -45,16 +37,8 @@ function profileReducer(
 
 export function useProfile() {
   const [state, dispatch] = useReducer(profileReducer, initialState)
-
   return {
-    selectedProfile: state.selectedProfile,
     profiles: state.profiles,
-    selectProfile: (profile: Profile) => {
-      dispatch({
-        type: ActionTypes.SelectProfile,
-        payload: profile,
-      })
-    },
     fetchProfiles: () => {
       const profiles = Api.fetchProfiles()
       dispatch({

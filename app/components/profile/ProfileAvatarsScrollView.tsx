@@ -1,5 +1,10 @@
 import React from 'react'
-import { FlatList, ListRenderItemInfo, useWindowDimensions } from 'react-native'
+import {
+  FlatList,
+  ListRenderItemInfo,
+  Platform,
+  useWindowDimensions,
+} from 'react-native'
 import Animated, {
   scrollTo,
   SharedValue,
@@ -18,7 +23,6 @@ export declare namespace ProfileAvatarsScrollView {
     onIndexChanged?(index: number): void
     scrollIndex: SharedValue<number>
     profiles: Profile[]
-    selectedProfile: Profile
     avatarDiameter?: number
   }
 }
@@ -31,7 +35,6 @@ export default React.memo(function ProfileAvatarsScrollView({
   scrollIndex,
   profiles = [],
   avatarDiameter = 65,
-  selectedProfile,
 }: ProfileAvatarsScrollView.Props) {
   const { width } = useWindowDimensions()
   const animFlatListRef = useAnimatedRef<FlatList>()
@@ -46,6 +49,10 @@ export default React.memo(function ProfileAvatarsScrollView({
       scrollTo(animFlatListRef, scrollIndex.value * itemLength, 0, true)
     }
   })
+
+  const selectedProfile = useDerivedValue(() => {
+    return profiles[scrollIndex.value]
+  }, [profiles, scrollIndex.value])
 
   const animatedScrollHandler = useAnimatedScrollHandler<{
     beginOffset: number
@@ -73,6 +80,7 @@ export default React.memo(function ProfileAvatarsScrollView({
         data={profiles}
         horizontal={true}
         bounces={false}
+        decelerationRate={Platform.select({ android: 'fast', ios: undefined })}
         ref={animFlatListRef}
         contentContainerStyle={{ alignItems: 'center' }}
         showsHorizontalScrollIndicator={false}
@@ -82,10 +90,11 @@ export default React.memo(function ProfileAvatarsScrollView({
         renderItem={({ item: p, index }: ListRenderItemInfo<Profile>) => (
           <ProfileAvatar
             key={p.id}
+            id={p.id}
+            selectedProfile={selectedProfile}
             diameter={avatarDiameter}
             borderWidth={4}
             profileImageSource={p.imageSource}
-            selected={p.id === selectedProfile?.id}
             onPress={() => onProfileSelect(p, index)}
             containerStyle={[
               { marginRight: avatarMarginRight },

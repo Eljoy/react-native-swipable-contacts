@@ -23,7 +23,7 @@ export function BottomShadow({
   return (
     <SingleSidedShadowBox style={containerStyle} {...singleSidedShadowBoxProps}>
       <Animated.View style={[styles.shadow, ...shadowStyle]}>
-        <View style={{ position: 'absolute', zIndex: 100 }}>{children}</View>
+        <View style={styles.absolute}>{children}</View>
       </Animated.View>
     </SingleSidedShadowBox>
   )
@@ -39,5 +39,8 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.4,
     shadowRadius: 3,
     elevation: 5,
+  },
+  absolute: {
+    position: 'absolute',
   },
 })

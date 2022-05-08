@@ -1,7 +1,6 @@
 import React, { useEffect } from 'react'
 import { StyleSheet, ViewStyle } from 'react-native'
 import {
-  runOnJS,
   useAnimatedStyle,
   useSharedValue,
   withSpring,
@@ -13,14 +12,11 @@ import { ProfileInfoScrollView } from '../components/profile/ProfileInfoScrollVi
 import { BottomShadow } from '../components/shadow'
 import { TitleText } from '../components/typography'
 import { useProfile } from '../hooks/useProfile'
-import { Profile } from '../models'
 
 export default function ProfileScreen() {
-  const { fetchProfiles, profiles, selectProfile, selectedProfile } =
-    useProfile()
+  const { fetchProfiles, profiles } = useProfile()
 
   useEffect(fetchProfiles, [])
-  useEffect(() => selectProfile(profiles[0]), [profiles])
 
   const scrollIndex = useSharedValue(0)
   const isProfileInfoDragged = useSharedValue(false)
@@ -28,13 +24,6 @@ export default function ProfileScreen() {
   function onScrollIndexChanged(index: number) {
     'worklet'
     scrollIndex.value = index
-    runOnJS(selectProfile)(profiles[index])
-  }
-
-  function onProfileSelect(profile: Profile, index: number) {
-    'worklet'
-    scrollIndex.value = index
-    selectProfile(profile)
   }
 
   function onProfileScrollDragBegin() {
@@ -68,11 +57,9 @@ export default function ProfileScreen() {
         shadowWidth={5}
         shadowStyle={[styles.shadow, shadowAnimatedStyle]}>
         <ProfileAvatarsScrollView
-          selectedProfile={selectedProfile}
           profiles={profiles}
           scrollIndex={scrollIndex}
           onIndexChanged={onScrollIndexChanged}
-          onProfileSelect={onProfileSelect}
         />
       </BottomShadow>
       <ProfileInfoScrollView

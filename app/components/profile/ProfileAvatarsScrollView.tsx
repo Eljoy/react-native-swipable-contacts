@@ -1,5 +1,11 @@
 import React from 'react'
-import { FlatList, ListRenderItemInfo, useWindowDimensions } from 'react-native'
+import {
+  FlatList,
+  ListRenderItemInfo,
+  Platform,
+  StyleSheet,
+  useWindowDimensions,
+} from 'react-native'
 import Animated, {
   scrollTo,
   SharedValue,
@@ -14,11 +20,9 @@ import { ProfileAvatar } from './ProfileAvatar'
 
 export declare namespace ProfileAvatarsScrollView {
   export type Props = {
-    onProfileSelect(profile: Profile, index: number): void
     onIndexChanged?(index: number): void
     scrollIndex: SharedValue<number>
     profiles: Profile[]
-    selectedProfile: Profile
     avatarDiameter?: number
   }
 }
@@ -26,12 +30,10 @@ export declare namespace ProfileAvatarsScrollView {
 const AnimatedFlatList = Animated.createAnimatedComponent(FlatList)
 
 export default React.memo(function ProfileAvatarsScrollView({
-  onProfileSelect,
   onIndexChanged,
   scrollIndex,
   profiles = [],
   avatarDiameter = 65,
-  selectedProfile,
 }: ProfileAvatarsScrollView.Props) {
   const { width } = useWindowDimensions()
   const animFlatListRef = useAnimatedRef<FlatList>()
@@ -46,6 +48,10 @@ export default React.memo(function ProfileAvatarsScrollView({
       scrollTo(animFlatListRef, scrollIndex.value * itemLength, 0, true)
     }
   })
+
+  const selectedProfile = useDerivedValue(() => {
+    return profiles[scrollIndex.value]
+  }, [profiles, scrollIndex.value])
 
   const animatedScrollHandler = useAnimatedScrollHandler<{
     beginOffset: number
@@ -73,8 +79,9 @@ export default React.memo(function ProfileAvatarsScrollView({
         data={profiles}
         horizontal={true}
         bounces={false}
+        decelerationRate={Platform.select({ android: 'fast', ios: undefined })}
         ref={animFlatListRef}
-        contentContainerStyle={{ alignItems: 'center' }}
+        contentContainerStyle={styles.contentContainerStyle}
         showsHorizontalScrollIndicator={false}
         alwaysBounceHorizontal={false}
         onScroll={animatedScrollHandler}
@@ -82,11 +89,12 @@ export default React.memo(function ProfileAvatarsScrollView({
         renderItem={({ item: p, index }: ListRenderItemInfo<Profile>) => (
           <ProfileAvatar
             key={p.id}
+            id={p.id}
+            selectedProfile={selectedProfile}
             diameter={avatarDiameter}
             borderWidth={4}
             profileImageSource={p.imageSource}
-            selected={p.id === selectedProfile?.id}
-            onPress={() => onProfileSelect(p, index)}
+            onPress={() => onIndexChanged(index)}
             containerStyle={[
               { marginRight: avatarMarginRight },
               index === 0 && { marginLeft: firstLastElementOffset },
@@ -100,4 +108,10 @@ export default React.memo(function ProfileAvatarsScrollView({
       />
     </Layout>
   )
+})
+
+const styles = StyleSheet.create({
+  contentContainerStyle: {
+    alignItems: 'center',
+  },
 })

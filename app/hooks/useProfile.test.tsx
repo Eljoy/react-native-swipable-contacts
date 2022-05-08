@@ -25,13 +25,4 @@ describe('useProfile', () => {
     expect(apiMock).toBeCalled()
     expect(result.current.profiles).toEqual(profiles)
   })
-
-  it('should update selectedProfile on selectProfile call', () => {
-    const { result } = renderHook(() => useProfile())
-    act(() => {
-      result.current.fetchProfiles()
-      result.current.selectProfile(profiles[0])
-    })
-    expect(result.current.selectedProfile).toEqual(profiles[0])
-  })
 })

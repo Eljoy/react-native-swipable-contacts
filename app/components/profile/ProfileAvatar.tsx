@@ -7,16 +7,20 @@ import {
   ViewStyle,
 } from 'react-native'
 import Animated, {
+  SharedValue,
   useAnimatedStyle,
   useDerivedValue,
   withSpring,
 } from 'react-native-reanimated'
+import { Profile } from '../../models'
 import { Layout } from '../layout'
 
 export declare namespace ProfileAvatar {
   type Props = {
+    id: Profile['id']
     profileImageSource: ImageSourcePropType
     containerStyle?: ViewStyle[]
+    selectedProfile: SharedValue<Profile>
     diameter: number
     borderWidth: number
     selected?: boolean
@@ -27,14 +31,15 @@ export declare namespace ProfileAvatar {
 export const ProfileAvatar = React.memo(function ({
   profileImageSource,
   containerStyle = [],
+  id,
   diameter,
   borderWidth,
   onPress,
-  selected = false,
+  selectedProfile,
 }: ProfileAvatar.Props) {
   const selectedScale = useDerivedValue(() => {
-    return selected ? 1 : 0.8
-  }, [selected])
+    return selectedProfile.value?.id === id ? 1 : 0.8
+  }, [selectedProfile])
 
   const containerStyles: ViewStyle[] = [
     {
